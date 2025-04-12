@@ -198,6 +198,7 @@ export const newFrameElement = (
 export const newMagicFrameElement = (
   opts: {
     name?: string;
+    prompt?: string;
   } & ElementConstructorOpts,
 ): NonDeleted<ExcalidrawMagicFrameElement> => {
   const frameElement = newElementWith(
@@ -205,6 +206,7 @@ export const newMagicFrameElement = (
       ..._newElementBase<ExcalidrawMagicFrameElement>("magicframe", opts),
       type: "magicframe",
       name: opts?.name || null,
+      prompt: opts?.prompt || null,
     },
     {},
   );

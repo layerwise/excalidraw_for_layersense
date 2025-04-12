@@ -470,6 +470,7 @@ import { activeEyeDropperAtom } from "./EyeDropper";
 import FollowMode from "./FollowMode/FollowMode";
 import LayerUI from "./LayerUI";
 import { ElementCanvasButton } from "./MagicButton";
+import { ElementCanvasButtonAndPrompt } from "./MagicButtonAndPrompt";
 import { SVGLayer } from "./SVGLayer";
 import { searchItemInFocusAtom } from "./SearchMenu";
 import { isSidebarDockedAtom } from "./Sidebar/Sidebar";
@@ -1702,16 +1703,24 @@ class App extends React.Component<AppProps, AppState> {
                               element={firstSelectedElement}
                               elementsMap={elementsMap}
                             >
-                              <ElementCanvasButton
+                              <ElementCanvasButtonAndPrompt
                                 title={t("labels.convertToCode")}
                                 icon={MagicIcon}
                                 checked={false}
+                                prompt={firstSelectedElement.prompt ?? ""}
                                 onChange={() =>
                                   this.onMagicFrameGenerate(
                                     firstSelectedElement,
                                     "button",
+                                    firstSelectedElement.prompt ?? ""
                                   )
                                 }
+                                //onPromptChange={(prompt) => {
+                                //  firstSelectedElement.prompt = prompt;
+                                //}}
+                                onPromptChange={(prompt) => {
+                                  this.updateFrameElement(firstSelectedElement, prompt ?? "", false);
+                                }}
                               />
                             </ElementCanvasButtons>
                           )}
@@ -1980,7 +1989,12 @@ class App extends React.Component<AppProps, AppState> {
   private async onMagicFrameGenerate(
     magicFrame: ExcalidrawMagicFrameElement,
     source: "button" | "upstream",
+    prompt?: string,
   ) {
+    if (prompt) {
+       console.log(prompt)
+    }
+    
     const generateDiagramToCode = this.plugins.diagramToCode?.generate;
 
     if (!generateDiagramToCode) {
@@ -4918,6 +4932,24 @@ class App extends React.Component<AppProps, AppState> {
     }
     gesture.initialScale = null;
   });
+
+  private updateFrameElement = (
+    element: ExcalidrawMagicFrameElement,
+    nextPrompt: string,
+    isDeleted: boolean) => {
+    this.scene.replaceAllElements([
+      // Not sure why we include deleted elements as well hence using deleted elements map
+      ...this.scene.getElementsIncludingDeleted().map((_element) => {
+        if (_element.id === element.id && isMagicFrameElement(_element)) {
+          return newElementWith(_element, {
+            prompt: nextPrompt,
+            isDeleted: isDeleted ?? _element.isDeleted,
+          });
+        }
+        return _element;
+      }),
+    ]);
+  };
 
   private handleTextWysiwyg(
     element: ExcalidrawTextElement,

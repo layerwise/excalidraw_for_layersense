@@ -1,12 +1,15 @@
 import {
   DiagramToCodePlugin,
-  exportToBlob,
-  getTextFromElements,
-  MIME_TYPES,
+  //exportToBlob,
+  //getTextFromElements,
+  //MIME_TYPES,
   TTDDialog,
+  serializeAsJSON,
 } from "@excalidraw/excalidraw";
-import { getDataURL } from "@excalidraw/excalidraw/data/blob";
+//import { getDataURL } from "@excalidraw/excalidraw/data/blob";
 import { safelyParseJSON } from "@excalidraw/common";
+
+import { saveAsJSON } from "@excalidraw/excalidraw/data/json";
 
 import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 
@@ -21,21 +24,20 @@ export const AIComponents = ({
         generate={async ({ frame, children }) => {
           const appState = excalidrawAPI.getAppState();
 
-          const blob = await exportToBlob({
-            elements: children,
-            appState: {
-              ...appState,
-              exportBackground: true,
-              viewBackgroundColor: appState.viewBackgroundColor,
-            },
-            exportingFrame: frame,
-            files: excalidrawAPI.getFiles(),
-            mimeType: MIME_TYPES.jpg,
-          });
+          const serializedFrame = serializeAsJSON(
+            children,
+            appState,
+            excalidrawAPI.getFiles(),
+            "local",
+          );
 
-          const dataURL = await getDataURL(blob);
-
-          const textFromFrameChildren = getTextFromElements(children);
+          const fileHandle = await saveAsJSON(
+            children,
+            appState,
+            excalidrawAPI.getFiles(),
+            //"serialized_frame", // filename
+          );
+          console.log(fileHandle);
 
           const response = await fetch(
             `${
@@ -47,11 +49,7 @@ export const AIComponents = ({
                 Accept: "application/json",
                 "Content-Type": "application/json",
               },
-              body: JSON.stringify({
-                texts: textFromFrameChildren,
-                image: dataURL,
-                theme: appState.theme,
-              }),
+              body: serializedFrame,
             },
           );
 

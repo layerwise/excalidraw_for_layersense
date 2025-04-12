@@ -619,6 +619,7 @@ export const convertToExcalidrawElements = (
           x: 0,
           y: 0,
           ...element,
+          prompt: element.prompt ?? undefined
         });
         break;
       }

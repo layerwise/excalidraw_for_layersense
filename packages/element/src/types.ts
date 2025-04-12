@@ -167,6 +167,7 @@ export type ExcalidrawFrameElement = _ExcalidrawElementBase & {
 
 export type ExcalidrawMagicFrameElement = _ExcalidrawElementBase & {
   type: "magicframe";
+  prompt: string | null;
   name: string | null;
 };
 
